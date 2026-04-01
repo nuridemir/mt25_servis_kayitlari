@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yamaha MT-25 — Bakım Geçmişi</title>
+<style>
+  :root {
+    --blue: #1a3a5c;
+    --blue2: #2d6aa0;
+    --blue-light: #eaf2fb;
+    --orange: #d35400;
+    --orange-light: #fef5ec;
+    --green: #1e8449;
+    --green-light: #eafaf1;
+    --red: #c0392b;
+    --red-light: #fdedec;
+    --gray: #7f8c8d;
+    --border: #dce8f5;
+    --bg: #f4f7fb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: #2c3e50; }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #1a3a5c 0%, #2d6aa0 100%);
+    padding: 28px 24px 20px;
+    color: white;
+  }
+  header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: .5px; }
+  header p { font-size: .85rem; opacity: .75; margin-top: 3px; }
+  .stats-bar {
+    display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;
+  }
+  .stat {
+    background: rgba(255,255,255,.12); border-radius: 8px;
+    padding: 8px 16px; text-align: center; min-width: 100px;
+  }
+  .stat b { display: block; font-size: 1.15rem; }
+  .stat span { font-size: .72rem; opacity: .8; }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 14px 20px; display: flex; gap: 10px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .toolbar input, .toolbar select {
+    border: 1.5px solid var(--border); border-radius: 7px;
+    padding: 8px 12px; font-size: .85rem; color: #2c3e50;
+    background: var(--bg); outline: none; transition: border .2s;
+  }
+  .toolbar input { flex: 1; min-width: 200px; }
+  .toolbar input:focus, .toolbar select:focus { border-color: var(--blue2); background: white; }
+  .toolbar select { cursor: pointer; }
+  .btn-reset {
+    background: var(--blue2); color: white; border: none; border-radius: 7px;
+    padding: 8px 16px; font-size: .85rem; cursor: pointer; font-weight: 600;
+    transition: background .2s;
+  }
+  .btn-reset:hover { background: var(--blue); }
+  .result-count {
+    display: flex; align-items: center; font-size: .8rem;
+    color: var(--gray); margin-left: auto; white-space: nowrap;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 18px; top: 0; bottom: 0;
+    width: 3px; background: linear-gradient(to bottom, var(--blue2), #cde); border-radius: 2px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: white; border-radius: 12px; margin-bottom: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07); overflow: hidden;
+    margin-left: 44px; position: relative; transition: box-shadow .2s;
+    border-left: 4px solid transparent;
+  }
+  .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.12); }
+  .card.type-mavi   { border-left-color: var(--blue2); }
+  .card.type-turuncu{ border-left-color: var(--orange); }
+  .card.type-yesil  { border-left-color: var(--green); }
+  .card.type-kirmizi{ border-left-color: var(--red); }
+  .card.hidden { display: none; }
+
+  /* timeline dot */
+  .dot {
+    position: absolute; left: -38px; top: 16px;
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 3px solid white; box-shadow: 0 0 0 2px var(--blue2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .55rem; font-weight: 700; color: white;
+  }
+  .type-mavi    .dot { background: var(--blue2); box-shadow: 0 0 0 2px var(--blue2); }
+  .type-turuncu .dot { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+  .type-yesil   .dot { background: var(--green);  box-shadow: 0 0 0 2px var(--green); }
+  .type-kirmizi .dot { background: var(--red);    box-shadow: 0 0 0 2px var(--red); }
+
+  /* card header */
+  .card-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 16px; cursor: pointer; user-select: none;
+  }
+  .card-no {
+    font-weight: 700; font-size: .8rem; color: var(--gray);
+    min-width: 28px;
+  }
+  .card-date {
+    font-weight: 700; font-size: .9rem; color: var(--blue); min-width: 95px;
+  }
+  .km-badge {
+    background: var(--blue-light); color: var(--blue2);
+    border-radius: 20px; padding: 3px 10px; font-size: .78rem; font-weight: 700;
+    white-space: nowrap;
+  }
+  .type-badge {
+    border-radius: 20px; padding: 3px 10px; font-size: .75rem; font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-mavi    { background: var(--blue-light);   color: var(--blue2); }
+  .badge-turuncu { background: var(--orange-light); color: var(--orange); }
+  .badge-yesil   { background: var(--green-light);  color: var(--green); }
+  .badge-kirmizi { background: var(--red-light);    color: var(--red); }
+
+  .card-title { flex: 1; font-size: .85rem; color: #555; }
+  .price-tag {
+    font-weight: 700; font-size: .88rem; color: var(--blue);
+    margin-left: auto; white-space: nowrap;
+  }
+  .arrow {
+    font-size: .7rem; color: var(--gray); transition: transform .25s; margin-left: 6px;
+  }
+  .card.open .arrow { transform: rotate(180deg); }
+
+  /* card body */
+  .card-body { display: none; padding: 0 16px 14px; border-top: 1px solid var(--border); }
+  .card.open .card-body { display: block; }
+
+  .section-label {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--gray); margin: 12px 0 6px;
+  }
+
+  /* parts table */
+  .parts-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  .parts-table th {
+    background: var(--blue-light); color: var(--blue); font-weight: 700;
+    padding: 5px 10px; text-align: left; font-size: .75rem;
+  }
+  .parts-table td { padding: 5px 10px; border-bottom: 1px solid #f0f4f8; }
+  .parts-table tr:last-child td { border-bottom: none; }
+  .parts-table tr:hover td { background: #fafcff; }
+  .part-price { text-align: right; font-weight: 600; color: var(--blue2); }
+  .part-code  { color: var(--gray); font-size: .72rem; font-family: monospace; }
+
+  /* ops list */
+  .ops-list { list-style: none; font-size: .82rem; }
+  .ops-list li { padding: 3px 0 3px 14px; position: relative; color: #555; }
+  .ops-list li::before { content: '→'; position: absolute; left: 0; color: var(--blue2); }
+
+  /* notes */
+  .note-box {
+    border-radius: 7px; padding: 8px 12px; font-size: .8rem; line-height: 1.5;
+    margin-top: 4px;
+  }
+  .note-musteri { background: #fffde7; color: #7d6608; border-left: 3px solid #f39c12; }
+  .note-kapanis { background: var(--green-light); color: var(--green); border-left: 3px solid var(--green); }
+
+  /* ── SUMMARY TABLE ── */
+  .summary-wrap { margin-bottom: 28px; }
+  .summary-wrap h2 { font-size: 1rem; color: var(--blue); margin-bottom: 10px; font-weight: 700; }
+  .sum-table { width: 100%; border-collapse: collapse; font-size: .82rem; background: white;
+    border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .sum-table th { background: var(--blue); color: white; padding: 8px 12px; text-align: left; }
+  .sum-table td { padding: 6px 12px; border-bottom: 1px solid var(--border); }
+  .sum-table tr:last-child td { border-bottom: none; font-weight: 700; background: var(--blue-light); }
+  .sum-table tr:hover td { background: var(--bg); }
+
+  /* ── NO RESULTS ── */
+  .no-results {
+    text-align: center; padding: 60px 20px; color: var(--gray); display: none;
+  }
+  .no-results svg { width: 60px; opacity: .3; margin-bottom: 12px; }
+  .no-results p { font-size: 1rem; }
+
+  @media(max-width:600px) {
+    .card-head { flex-wrap: wrap; gap: 6px; }
+    .timeline::before { left: 10px; }
+    .card { margin-left: 30px; }
+    .dot  { left: -28px; width: 16px; height: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏍️ Yamaha MT-25 (2018) — Bakım Geçmişi</h1>
+  <p>Plaka: 34BHN174 &nbsp;|&nbsp; Şasi: MH3RG432000001095 &nbsp;|&nbsp; Model: MT-250 ABS MNM3 GRİ</p>
+  <div class="stats-bar">
+    <div class="stat"><b>26</b><span>Servis Kaydı</span></div>
+    <div class="stat"><b>2018–2026</b><span>Aralık</span></div>
+    <div class="stat"><b>67.742 KM</b><span>Son KM</span></div>
+    <div class="stat"><b id="totalSpend">hesaplanıyor…</b><span>Toplam Harcama</span></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <input type="text" id="searchInput" placeholder="🔍 Parça adı, işlem veya tarih ara…" oninput="filterCards()">
+  <select id="typeFilter" onchange="filterCards()">
+    <option value="">Tüm Servis Tipleri</option>
+    <option value="mavi">Periyodik Bakım</option>
+    <option value="turuncu">Onarım / Parça</option>
+    <option value="yesil">Kontrol / Muayene</option>
+    <option value="kirmizi">Önemli İşlem</option>
+  </select>
+  <select id="yearFilter" onchange="filterCards()">
+    <option value="">Tüm Yıllar</option>
+    <option value="2018">2018</option>
+    <option value="2019">2019</option>
+    <option value="2020">2020</option>
+    <option value="2021">2021</option>
+    <option value="2022">2022</option>
+    <option value="2023">2023</option>
+    <option value="2024">2024</option>
+    <option value="2025">2025</option>
+    <option value="2026">2026</option>
+  </select>
+  <button class="btn-reset" onclick="resetFilters()">Temizle</button>
+  <span class="result-count" id="resultCount">26 kayıt</span>
+</div>
+
+<main>
+
+<!-- ÖZET TABLO -->
+<div class="summary-wrap" id="summaryWrap">
+  <h2>📊 Parça Değişim Özeti</h2>
+  <table class="sum-table">
+    <thead><tr><th>Parça / İşlem</th><th>Değişim KM'leri</th><th>Toplam Değişim</th></tr></thead>
+    <tbody>
+      <tr><td>Motor Yağı</td><td>959 · 5.000 · 9.888 · 14.837 · 20.000 · 24.792 · 30.000 · 34.975 · 39.890 · 45.160 · 49.980 · 55.031 · 60.073 · 64.873 · 67.742</td><td>15 kez</td></tr>
+      <tr><td>Yağ Filtresi</td><td>959 · 5.000 · 20.000 · 60.073</td><td>4 kez</td></tr>
+      <tr><td>Hava Filtresi</td><td>9.888 · 20.000 · 60.073</td><td>3 kez</td></tr>
+      <tr><td>Karter Tapa Pulu</td><td>9.888 · 14.837 · 20.000 · 24.792 · 30.000 · 34.975 · 45.160 · 49.980 · 55.031 · 60.073</td><td>10 kez</td></tr>
+      <tr><td>Buji (LMAR8A-9)</td><td>20.000 · 60.073</td><td>2 kez</td></tr>
+      <tr><td>Zincir Dişli Kiti</td><td>20.001 · 43.458 · 68.078</td><td>3 kez</td></tr>
+      <tr><td>Fren Hidroligi (DOT4/5)</td><td>20.000 · 22.380 · 60.073</td><td>3 kez</td></tr>
+      <tr><td>On Fren Balatası</td><td>55.031</td><td>1 kez</td></tr>
+      <tr><td>Arka Fren Balatası</td><td>60.073</td><td>1 kez</td></tr>
+      <tr><td>Arka Fren Müşürü</td><td>30.000</td><td>1 kez</td></tr>
+      <tr><td>Arka Fren Pedalı</td><td>1.150</td><td>1 kez</td></tr>
+      <tr><td>Oksijen Sensörü</td><td>25.574</td><td>1 kez</td></tr>
+      <tr><td>Gidon</td><td>13.096 · 64.873</td><td>2 kez</td></tr>
+      <tr><td>Zincir Yağı / Bakımı</td><td>24.792 · 49.980 · 60.073 · 64.873 · 67.742 · 68.078</td><td>6 kez</td></tr>
+      <tr><td>Soğutma Sıvısı</td><td>22.380 · 55.031 · 60.073 · 64.920</td><td>4 kez</td></tr>
+      <tr><td>Amortisör Yağı</td><td>60.073</td><td>1 kez</td></tr>
+      <tr><td>Yağ Keçesi</td><td>60.073</td><td>2 adet</td></tr>
+      <tr><td>Debriyaj Seti</td><td>64.920</td><td>1 kez</td></tr>
+      <tr><td>Conta</td><td>64.873 · 64.920</td><td>2 kez</td></tr>
+      <tr><td>Ön Çamurluk</td><td>64.873</td><td>1 kez</td></tr>
+      <tr><td>Basamak (Sol/Sağ)</td><td>12.888 (sağ) · 64.873 (sol)</td><td>2 adet</td></tr>
+      <tr><td>Far Ampulü</td><td>22.380</td><td>1 kez</td></tr>
+      <tr style="background:#eaf2fb"><td><b>TOPLAM HARCAMA</b></td><td></td><td><b id="totalInTable">hesaplanıyor…</b></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="timeline" id="timeline">
+
+<!-- CARDS will be injected by JS -->
+
+</div>
+
+<div class="no-results" id="noResults">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+  </svg>
+  <p>Aramanızla eşleşen kayıt bulunamadı.</p>
+</div>
+
+</main>
+
+<script>
+const services = [
+  {
+    no:1, tarih:'23/06/2018', yil:2018, km:959, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'1WDE34401000', ad:'Yağ Filtresi', miktar:'1 adet', fiyat:''},
+      {kod:'YMD650122081', ad:'Yamalube Tam Sentetik 15W50 208L Varil', miktar:'2099 ml', fiyat:''},
+    ],
+    islemler:['Stand işçiliği (0,20)', 'Ekstra'],
+    musteriNotu:'1.000 KM BAKIM YAPILACAK',
+    kapanisNotu:'Araçta değerli eşya yoktur. Arka fren pedalı değişmesi lazım, kırılabilir. Bir sonraki bakım 5.000 km veya 23/06/2019.',
+    toplam:0
+  },
+  {
+    no:2, tarih:'30/06/2018', yil:2018, km:1150, tip:'Onarım', renk:'turuncu',
+    parcalar:[
+      {kod:'1WDF72110000', ad:'Arka Fren Pedalı', miktar:'1 adet', fiyat:''},
+    ],
+    islemler:['Genel İşçilik 2 (1,00 saat)', 'Hizmet Bedeli: 63,00 TL'],
+    musteriNotu:'Arka fren pedalı değişecek.',
+    kapanisNotu:'Araçta değerli eşya yoktur.',
+    toplam:0
+  },
+  {
+    no:3, tarih:'22/09/2018', yil:2018, km:5000, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'1WDE34401000', ad:'Yağ Filtresi', miktar:'1 adet', fiyat:''},
+      {kod:'YMD650122082', ad:'Yamalube Tam Sentetik 15W50 208L Varil', miktar:'2099 ml', fiyat:''},
+    ],
+    islemler:['Hizmet Bedeli (KDV %18)'],
+    musteriNotu:'5.000 KM BAKIM YAPILACAK.',
+    kapanisNotu:'—',
+    toplam:0
+  },
+  {
+    no:4, tarih:'02/02/2019', yil:2019, km:7450, tip:'Genel Muayene', renk:'yesil',
+    parcalar:[],
+    islemler:['Genel İşçilik 1 (0,50 saat)', 'Hizmet Bedeli: 63,00 TL', 'İşçilik İndirim: %100'],
+    musteriNotu:'Frenler sert zor sıkılıyor ve araç durmuyor — balatayı gerekirse değiştir.',
+    kapanisNotu:'Frenler normal.',
+    toplam:0
+  },
+  {
+    no:5, tarih:'04/05/2019', yil:2019, km:8150, tip:'Genel Muayene', renk:'yesil',
+    parcalar:[],
+    islemler:['Yıkama', 'Zincir yağlama', 'İşçilik (0,23 saat)', 'Hizmet Bedeli: 73,00 TL'],
+    musteriNotu:'1- Yıkama  2- Zincirde hafif paslanma var, kontrol.',
+    kapanisNotu:'Yıkama yapıldı. Zincir yağsız kaldığı için paslanma oluşmuş, zincir yağlaması yapıldı.',
+    toplam:0
+  },
+  {
+    no:6, tarih:'29/06/2019', yil:2019, km:9888, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'1WDE44510000', ad:'Hava Filtresi', miktar:'1 adet', fiyat:''},
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:''},
+      {kod:'YMD650212082', ad:'Yamalube Y. Sentetik 10W40 208L', miktar:'1799 ml', fiyat:''},
+    ],
+    islemler:['Hizmet Bedeli (KDV %18)'],
+    musteriNotu:'10.000 KM BAKIM YAPILACAK. Zincir kontrol edilsin ve yağlansın. Yıkama olsun.',
+    kapanisNotu:'—',
+    toplam:0
+  },
+  {
+    no:7, tarih:'11/01/2020', yil:2020, km:12888, tip:'Genel Muayene', renk:'yesil',
+    parcalar:[],
+    islemler:['Sağ Sürücü Basamağı Montajı (1,00 saat)', 'Hizmet Bedeli: 73,00 TL'],
+    musteriNotu:'Müşterinin sipariş verdiği sağ sürücü basamağı değişimi yapılacak.',
+    kapanisNotu:'Sağ sürücü basamağı montajı yapıldı.',
+    toplam:0
+  },
+  {
+    no:8, tarih:'04/02/2020', yil:2020, km:13096, tip:'Genel Muayene', renk:'turuncu',
+    parcalar:[
+      {kod:'B04F61110000', ad:'Gidon', miktar:'1 adet', fiyat:''},
+    ],
+    islemler:['Gidon Değişimi (1,00 saat)', 'Hizmet Bedeli: 73,00 TL'],
+    musteriNotu:'Arıza ışığı yanıyormuş. Kontrol + Gidon değiştirilecek + Premium kontrol (motor yağı, su, frenler, lastikler).',
+    kapanisNotu:'Anlık hatalardan kaynaklı arıza ışığı yakmış, kayıt silindi (P2195-245). Gidon değiştirildi. Motor yağı, radyatör sıvısı, lastik, fren, motor ışıkları kontrol edildi. Herhangi bir problem görülemedi.',
+    toplam:0
+  },
+  {
+    no:9, tarih:'04/07/2020', yil:2020, km:14837, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:''},
+      {kod:'YMD650212082', ad:'Yamalube Y. Sentetik 10W40 208L', miktar:'1799 ml', fiyat:''},
+    ],
+    islemler:['Hizmet Bedeli (KDV %18)'],
+    musteriNotu:'15.000 KM BAKIMI YAPILACAK. Zincir ve egzozdaki paslar kontrol edilecek (değişim gerekir mi?).',
+    kapanisNotu:'15.000 km bakımı yapıldı. Lastik fren zincir motor ışıkları kontrol edildi. Zincir ayarlandı ve yağlandı. Zincir yağsız kaldığı için paslanmış. Egzozdaki paslanma da boya ile giderilebilir. Üst mesnetteki plastik tapa sipariş verilmeli.',
+    toplam:0
+  },
+  {
+    no:10, tarih:'10/12/2020', yil:2020, km:20000, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'1WDE34401000', ad:'Yağ Filtresi', miktar:'1 adet', fiyat:''},
+      {kod:'1WDE44510000', ad:'Hava Filtresi', miktar:'1 adet', fiyat:''},
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:''},
+      {kod:'947010043600', ad:'Buji LMAR8A-9', miktar:'2 adet', fiyat:''},
+      {kod:'YMD650212082', ad:'Yamalube Y. Sentetik 10W40 208L', miktar:'2099 ml', fiyat:''},
+      {kod:'YMD650490114', ad:'Yamalube Fren Hidroligi DOT4/5', miktar:'500 ml', fiyat:''},
+    ],
+    islemler:['Fren Hidrolikleri Değişimi (1,10 saat)', 'Yıkama', 'Diagnostik', 'Hizmet Bedeli (KDV %8)'],
+    musteriNotu:'20.000 km bakımı yapılacak. Sağ ayna gevşemiş, sıkılacak. Yıkama yapılacak.',
+    kapanisNotu:'20.000 km bakımı yapıldı. Yıkama yapıldı. Araç diagnostik cihaza bağlandı ve kontrolleri yapıldı. Fren hidrolikleri değişimi yapıldı. Sağ ayna sıkıldı. Y.P bankodan alınan tapaların montajı yapıldı. Bir sonraki bakım zincir dişli set değişimi gerekiyor.',
+    toplam:0
+  },
+  {
+    no:11, tarih:'13/03/2021', yil:2021, km:20001, tip:'Genel Bakım', renk:'turuncu',
+    parcalar:[
+      {kod:'1WDW001A0000', ad:'YZF-R25/MT-25 Zincir Dişli Kiti', miktar:'1 adet', fiyat:''},
+    ],
+    islemler:['Zincir Dişli Set Değişim (1,50 saat)', 'Hizmet Bedeli: 114,00 TL'],
+    musteriNotu:'Müşteri isteği üzerine zincir dişli set değişimi yapılacak.',
+    kapanisNotu:'Zincir dişli set değişimi yapıldı. Araç diagnostik cihaza bağlandı. Oksijen sensörü anlık arıza yakmış, silindi. Premium kontrol ve yıkama yapıldı.',
+    toplam:0
+  },
+  {
+    no:12, tarih:'10/08/2021', yil:2021, km:22380, tip:'Genel Muayene', renk:'turuncu',
+    parcalar:[
+      {kod:'10000004', ad:'Far Ampulü', miktar:'1 adet', fiyat:''},
+      {kod:'YMD650490084', ad:'Yamalube Soğutma Sıvısı', miktar:'1000 ml', fiyat:''},
+      {kod:'YMD650490114', ad:'Yamalube Fren Hidroligi DOT4/5', miktar:'500 ml', fiyat:''},
+    ],
+    islemler:['Servis İşçiliği (2,20 saat)', 'Hizmet Bedeli: 114,00 TL'],
+    musteriNotu:'Aracın aynaları dönüyor. Kısa far yanmıyor. Premium kontrol yapılacak.',
+    kapanisNotu:'Aynalar sıkıldı. Premium kontrol yapıldı. Sıvılar ve far ampulü değiştirildi. Arka fren müşürü ve lastiklerin değişimi gerekiyor, bilgi verildi.',
+    toplam:0
+  },
+  {
+    no:13, tarih:'08/10/2021', yil:2021, km:24792, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:'20,00 TL'},
+      {kod:'YMD650212083', ad:'Yamalube Y. Sentetik 10W-40 208L', miktar:'1999 ml', fiyat:'154,57 TL'},
+      {kod:'YMD65049A012', ad:'Yamalube Zincir Yağı 300ML', miktar:'9 ml', fiyat:'3,25 TL'},
+    ],
+    islemler:['Hizmet Bedeli: 67,26 TL'],
+    musteriNotu:'—',
+    kapanisNotu:'—',
+    toplam:245.09
+  },
+  {
+    no:14, tarih:'06/11/2021', yil:2021, km:25574, tip:'Genel Bakım', renk:'kirmizi',
+    parcalar:[
+      {kod:'1WDH592A0000', ad:'Oksijen Sensörü', miktar:'1 adet', fiyat:'1.144,78 TL'},
+    ],
+    islemler:['Hizmet Bedeli: 0,00 TL (ücretsiz işçilik)'],
+    musteriNotu:'Arıza ışığı yanıyor.',
+    kapanisNotu:'Oksijen sensörü değişti.',
+    toplam:1350.84
+  },
+  {
+    no:15, tarih:'31/08/2022', yil:2022, km:30000, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'1WDH25301000', ad:'Arka Fren Müşürü', miktar:'1 adet', fiyat:'359,60 TL'},
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:'31,03 TL'},
+      {kod:'YMD650212083', ad:'Yamalube Y. Sentetik 10W-40 208L', miktar:'1799 ml', fiyat:'257,67 TL'},
+    ],
+    islemler:['Hizmet Bedeli: 345,15 TL'],
+    musteriNotu:'30.000 KM BAKIMI YAPILACAK. Arka fren müşürü değişecek.',
+    kapanisNotu:'—',
+    toplam:993.45
+  },
+  {
+    no:16, tarih:'30/11/2022', yil:2022, km:34975, tip:'Genel Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:'32,67 TL'},
+      {kod:'YMD650212083', ad:'Yamalube Y. Sentetik 10W-40 208L', miktar:'1999 ml', fiyat:'345,16 TL'},
+    ],
+    islemler:['Mekanik İşçilik (0,73 saat) — 223,96 TL', 'Hizmet Bedeli: 0,00 TL'],
+    musteriNotu:'35.000 KM BAKIMI YAPILACAK.',
+    kapanisNotu:'—',
+    toplam:601.78
+  },
+  {
+    no:17, tarih:'23/06/2023', yil:2023, km:39890, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'1WDBAKIM1800', ad:'R-25/MT-25 Bakım Kiti 18\'–20\'', miktar:'1 adet', fiyat:'1.293,29 TL'},
+      {kod:'YMD650212083', ad:'Yamalube Y. Sentetik 10W-40 208L', miktar:'2099 ml', fiyat:'440,87 TL'},
+    ],
+    islemler:['Hizmet Bedeli: 1.702,74 TL'],
+    musteriNotu:'40.000 BAKIM YAPILACAK.',
+    kapanisNotu:'—',
+    toplam:3436.90
+  },
+  {
+    no:18, tarih:'02/10/2023', yil:2023, km:43458, tip:'Onarım', renk:'turuncu',
+    parcalar:[
+      {kod:'1WDW001A0000', ad:'YZF-R25/MT-25 Zincir Dişli Kiti', miktar:'1 adet', fiyat:'3.033,53 TL'},
+    ],
+    islemler:['Mekanik İşçilik (2,00 saat) — 1.178,40 TL', 'Hizmet Bedeli: 0,00 TL'],
+    musteriNotu:'Zincir dişli değişecek.',
+    kapanisNotu:'—',
+    toplam:4211.93
+  },
+  {
+    no:19, tarih:'30/11/2023', yil:2023, km:45160, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:'35,22 TL'},
+      {kod:'YMD650212083', ad:'Yamalube Y. Sentetik 10W-40 208L', miktar:'1999 ml', fiyat:'476,00 TL'},
+    ],
+    islemler:['Hizmet Bedeli: 294,60 TL'],
+    musteriNotu:'45.000 KM BAKIM YAPILACAK.',
+    kapanisNotu:'—',
+    toplam:805.82
+  },
+  {
+    no:20, tarih:'29/05/2024', yil:2024, km:49980, tip:'Genel Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:'50,98 TL'},
+      {kod:'YMD650212083', ad:'Yamalube Y. Sentetik 10W-40 208L', miktar:'1999 ml', fiyat:'607,08 TL'},
+      {kod:'YMD650491820', ad:'Yamalube Zincir Yağı 300ML', miktar:'75 ml', fiyat:'108,26 TL'},
+    ],
+    islemler:['Mek. İşçilik (1,00 saat) — 1.026,00 TL', 'Hizmet Bedeli: 0,00 TL'],
+    musteriNotu:'50.000 bakım yapılacak. Debriyaj manetine bakılacak. Genel kontrol yapılacak.',
+    kapanisNotu:'—',
+    toplam:1792.32
+  },
+  {
+    no:21, tarih:'08/10/2024', yil:2024, km:55031, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'1WD258050000', ad:'Ön Fren Balatası', miktar:'1 adet', fiyat:'1.090,27 TL'},
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:'55,67 TL'},
+      {kod:'YMD650212083', ad:'Yamalube Y. Sentetik 10W-40 208L', miktar:'1999 ml', fiyat:'664,51 TL'},
+      {kod:'YMD650490085', ad:'Yamalube Soğutma Sıvısı 1L', miktar:'100 ml', fiyat:'35,15 TL'},
+    ],
+    islemler:['Mek. İşçilik (1,00 saat) — 1.056,00 TL', 'Hizmet Bedeli: 2.006,40 TL'],
+    musteriNotu:'55.000 KM BAKIM YAPILACAK.',
+    kapanisNotu:'55.000 km bakımı yapıldı. Sonraki bakım 60.000 km ya da 08.10.2025 tarihindedir.',
+    toplam:4908.00
+  },
+  {
+    no:22, tarih:'22/05/2025', yil:2025, km:60073, tip:'Periyodik Bakım', renk:'mavi',
+    parcalar:[
+      {kod:'1WD258060000', ad:'Arka Fren Balatası', miktar:'1 adet', fiyat:'943,37 TL'},
+      {kod:'1WDE34401000', ad:'Yağ Filtresi', miktar:'1 adet', fiyat:'474,65 TL'},
+      {kod:'1WDE44510000', ad:'Hava Filtresi', miktar:'1 adet', fiyat:'557,27 TL'},
+      {kod:'45PF31450000', ad:'Yağ Keçesi', miktar:'2 adet', fiyat:'363,67 TL'},
+      {kod:'4YSE11980000', ad:'Karter Tapa Pulu', miktar:'1 adet', fiyat:'61,88 TL'},
+      {kod:'947010043600', ad:'Buji LMAR8A-9', miktar:'2 adet', fiyat:'1.169,11 TL'},
+      {kod:'SARF', ad:'Sarf Malzeme', miktar:'1 adet', fiyat:'120,00 TL'},
+      {kod:'YDK1', ad:'Endüstriyel Temizleme', miktar:'6 adet', fiyat:'720,00 TL'},
+      {kod:'YMD650110105', ad:'Yamalube Tam Sentetik 10W-40', miktar:'2100 ml', fiyat:'1.192,76 TL'},
+      {kod:'YMD650490114', ad:'Yamalube Fren Hidroligi DOT4/5', miktar:'500 ml', fiyat:'530,19 TL'},
+      {kod:'YMD650490135', ad:'Yamalube Amortisör Yağı 10W', miktar:'1000 ml', fiyat:'885,06 TL'},
+      {kod:'YMD650491820', ad:'Yamalube Zincir Yağı 300ML', miktar:'69 ml', fiyat:'125,13 TL'},
+    ],
+    islemler:['Hizmet Bedeli: 762,00 TL'],
+    musteriNotu:'60.000 KM BAKIM YAPILACAK.',
+    kapanisNotu:'60 bin km bakımı yapıldı. Zincir ayar temizlik yapıldı. Ön amortisör yağ ve keçe değişti. Hidrolik yağı ve arka balata değişti.',
+    toplam:7905.08
+  },
+  {
+    no:23, tarih:'28/05/2025', yil:2025, km:60263, tip:'Genel Bakım', renk:'yesil',
+    parcalar:[],
+    islemler:['Kontrol İşçilik (0,01 saat) — 15,24 TL'],
+    musteriNotu:'Yan grenaj vidası sıkılacak.',
+    kapanisNotu:'Yan grenaj vidası sıkıldı.',
+    toplam:15.24
+  },
+  {
+    no:24, tarih:'18/09/2025', yil:2025, km:64503, tip:'Onarım', renk:'turuncu',
+    parcalar:[],
+    islemler:['Kontrol İşçilik (0,01 saat) — 16,01 TL'],
+    musteriNotu:'Sol basamak değişecek.',
+    kapanisNotu:'Sol basamak değiştirilemedi, pim değiştirildi, işemri bedelsiz kapatıldı.',
+    toplam:16.01
+  },
+  {
+    no:25, tarih:'27/09/2025', yil:2025, km:64873, tip:'Genel Bakım', renk:'turuncu',
+    parcalar:[
+      {kod:'1WDF74510000', ad:'Basamak', miktar:'1 adet', fiyat:'461,80 TL'},
+      {kod:'1WDXF15130P6', ad:'Ön Çamurluk', miktar:'1 adet', fiyat:'1.602,61 TL'},
+      {kod:'904301280300', ad:'Conta', miktar:'1 adet', fiyat:'114,09 TL'},
+      {kod:'B04F61110000', ad:'Gidon', miktar:'1 adet', fiyat:'1.856,55 TL'},
+      {kod:'SARF', ad:'Sarf Malzeme', miktar:'1 adet', fiyat:'120,00 TL'},
+      {kod:'YDK1', ad:'Endüstriyel Temizleme', miktar:'3 adet', fiyat:'524,99 TL'},
+      {kod:'YMD650110106', ad:'Yamalube Tam Sentetik 10W-40', miktar:'2000 ml', fiyat:'1.215,47 TL'},
+      {kod:'YMD650491821', ad:'Yamalube Zincir Yağı 300ML', miktar:'69 ml', fiyat:'133,71 TL'},
+    ],
+    islemler:['Mek. İşçilik (1,00 saat) — 1.600,80 TL', 'Hizmet Bedeli: 0,00 TL'],
+    musteriNotu:'Sipariş edilen parçaların montajı yapılacak. Sol basamak değişecek. Zincir bakımı yapılacak. 65.000 km bakımı yapılacak.',
+    kapanisNotu:'Sipariş edilen parçaların montajı yapıldı. Zincir bakımı yapıldı. 65.000 km bakımı yapıldı.',
+    toplam:7630.00
+  },
+  {
+    no:26, tarih:'30/09/2025', yil:2025, km:64920, tip:'Genel Bakım', renk:'kirmizi',
+    parcalar:[
+      {kod:'1WDE54610000', ad:'Conta', miktar:'1 adet', fiyat:'419,24 TL'},
+      {kod:'1WDE63240000', ad:'Debriyaj Sacı', miktar:'5 adet', fiyat:'799,98 TL'},
+      {kod:'1WDE63310000', ad:'Debriyaj Balatası', miktar:'6 adet', fiyat:'1.770,99 TL'},
+      {kod:'SARF', ad:'Sarf Malzeme', miktar:'1 adet', fiyat:'120,00 TL'},
+      {kod:'YDK1', ad:'Endüstriyel Temizleme', miktar:'1 adet', fiyat:'175,00 TL'},
+      {kod:'YMD650490085', ad:'Yamalube Soğutma Sıvısı 1L', miktar:'1000 ml', fiyat:'426,53 TL'},
+    ],
+    islemler:['Mekanik İşçilik (1,00 saat) — 1.600,80 TL', 'Hizmet Bedeli: 0,00 TL'],
+    musteriNotu:'Çekişte düşüklük var, kontrol. Debriyaj kaçırıyor, kontrol.',
+    kapanisNotu:'Debriyaj seti değiştirildi. Antifriz değiştirildi. Conta değiştirildi.',
+    toplam:5312.52
+  },
+  {
+    no:27, tarih:'06/10/2025', yil:2025, km:65211, tip:'Genel Bakım', renk:'kirmizi',
+    parcalar:[],
+    islemler:['Mek. İşçilik (4,00 saat) — 6.403,20 TL', 'Hizmet Bedeli: 0,00 TL'],
+    musteriNotu:'Rölantide stop ediyor soğukken kontrol edilecek. Çekişten düştü kontrol edilecek. Çok yakıt tüketiyor kontrol edilecek.',
+    kapanisNotu:'Senkron ayarı yapıldı. Subap ayarı yapıldı. Sente ayarı yapıldı. Genel kontroller tamamlandı.',
+    toplam:6403.20
+  },
+  {
+    no:28, tarih:'03/01/2026', yil:2026, km:67742, tip:'Genel Bakım', renk:'yesil',
+    parcalar:[
+      {kod:'YDK1', ad:'Endüstriyel Temizleme', miktar:'2 adet', fiyat:'349,99 TL'},
+      {kod:'YMD650491821', ad:'Yamalube Zincir Yağı 300ML', miktar:'69 ml', fiyat:'140,39 TL'},
+    ],
+    islemler:['Zincir İşçilik (0,36 saat) — 605,23 TL', 'Hizmet Bedeli: 0,00 TL'],
+    musteriNotu:'Zincir bakımı yapılacak.',
+    kapanisNotu:'Zincir bakımı yapıldı.',
+    toplam:1095.61
+  },
+  {
+    no:29, tarih:'10/02/2026', yil:2026, km:68078, tip:'Genel Bakım', renk:'turuncu',
+    parcalar:[
+      {kod:'1WDWF01A0000', ad:'YZF-R25/MT-25 Zincir Dişli Kiti', miktar:'1 adet', fiyat:'4.536,83 TL'},
+      {kod:'YDK1', ad:'Endüstriyel Temizleme', miktar:'2 adet', fiyat:'349,99 TL'},
+    ],
+    islemler:['Genel İşçilik (2,50 saat) — 5.463,00 TL', 'Hizmet Bedeli: 0,00 TL'],
+    musteriNotu:'Zincir dişli seti değişecek.',
+    kapanisNotu:'Zincir dişli seti değişti.',
+    toplam:10349.82
+  },
+];
+
+const renk2badge = { mavi:'badge-mavi', turuncu:'badge-turuncu', yesil:'badge-yesil', kirmizi:'badge-kirmizi' };
+
+function fmt(n) {
+  if (!n) return 'Garantili / Ücretsiz';
+  return n.toLocaleString('tr-TR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' TL';
+}
+
+function buildCards() {
+  const tl = document.getElementById('timeline');
+  let total = 0;
+  services.forEach(s => {
+    total += s.toplam;
+    const badge = renk2badge[s.renk] || 'badge-mavi';
+    const parcsHTML = s.parcalar.length ? `
+      <div class="section-label">🔩 Parça / Malzeme</div>
+      <table class="parts-table">
+        <thead><tr><th>Parça Adı</th><th>Ürün Kodu</th><th>Miktar</th><th>Fiyat</th></tr></thead>
+        <tbody>
+          ${s.parcalar.map(p=>`<tr>
+            <td>${p.ad}</td>
+            <td class="part-code">${p.kod}</td>
+            <td>${p.miktar}</td>
+            <td class="part-price">${p.fiyat||'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '';
+
+    const opsHTML = s.islemler.length ? `
+      <div class="section-label">⚙️ İşlemler / İşçilik</div>
+      <ul class="ops-list">${s.islemler.map(i=>`<li>${i}</li>`).join('')}</ul>` : '';
+
+    const mustHTML = s.musteriNotu && s.musteriNotu !== '—' ? `
+      <div class="section-label">📝 Müşteri Notu</div>
+      <div class="note-box note-musteri">${s.musteriNotu}</div>` : '';
+
+    const kapHTML = s.kapanisNotu && s.kapanisNotu !== '—' ? `
+      <div class="section-label">✅ Kapanış Notu</div>
+      <div class="note-box note-kapanis">${s.kapanisNotu}</div>` : '';
+
+    const titleSummary = [...s.parcalar.map(p=>p.ad), ...s.islemler].join(' ');
+
+    tl.innerHTML += `
+      <div class="card type-${s.renk}" id="card-${s.no}"
+           data-text="${s.tarih} ${s.tip} ${titleSummary} ${s.musteriNotu} ${s.kapanisNotu}"
+           data-renk="${s.renk}" data-yil="${s.yil}">
+        <div class="dot">${s.no}</div>
+        <div class="card-head" onclick="toggleCard(${s.no})">
+          <span class="card-no">#${String(s.no).padStart(2,'0')}</span>
+          <span class="card-date">${s.tarih}</span>
+          <span class="km-badge">${s.km.toLocaleString('tr-TR')} KM</span>
+          <span class="type-badge ${badge}">${s.tip}</span>
+          <span class="card-title">${s.parcalar.map(p=>p.ad).slice(0,2).join(', ')}${s.parcalar.length>2?'…':''}</span>
+          <span class="price-tag">${fmt(s.toplam)}</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="card-body">
+          ${parcsHTML}${opsHTML}${mustHTML}${kapHTML}
+        </div>
+      </div>`;
+  });
+
+  const ts = total.toLocaleString('tr-TR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' TL';
+  document.getElementById('totalSpend').textContent = ts;
+  document.getElementById('totalInTable').textContent = ts;
+}
+
+function toggleCard(no) {
+  document.getElementById('card-'+no).classList.toggle('open');
+}
+
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const renk = document.getElementById('typeFilter').value;
+  const yil = document.getElementById('yearFilter').value;
+  let count = 0;
+  document.querySelectorAll('.card').forEach(card => {
+    const text = card.dataset.text.toLowerCase();
+    const matchQ = !q || text.includes(q);
+    const matchR = !renk || card.dataset.renk === renk;
+    const matchY = !yil || card.dataset.yil === yil;
+    if (matchQ && matchR && matchY) { card.classList.remove('hidden'); count++; }
+    else card.classList.add('hidden');
+  });
+  document.getElementById('resultCount').textContent = count + ' kayıt';
+  document.getElementById('noResults').style.display = count === 0 ? 'block' : 'none';
+  document.getElementById('summaryWrap').style.display = (q||renk||yil) ? 'none' : '';
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('typeFilter').value = '';
+  document.getElementById('yearFilter').value = '';
+  filterCards();
+}
+
+buildCards();
+</script>
+</body>
+</html>
